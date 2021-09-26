@@ -1,0 +1,4 @@
+,key_as_string,mean_cpu_usage,host_name
+0,2021-09-08T06:30:00.000Z,0.1599399983882904,demo-project-mariadb0908
+1,2021-09-08T06:35:00.000Z,0.2391400009393692,demo-project-mariadb0908
+2,2021-09-08T06:40:00.000Z,0.24731999933719634,demo-project-mariadb0908
