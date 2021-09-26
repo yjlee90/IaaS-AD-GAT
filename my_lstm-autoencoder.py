@@ -7,6 +7,9 @@ import torch
 import torch.nn as nn
 from torch.utils import data
 from torch.utils.data import DataLoader, Dataset, SubsetRandomSampler, dataloader, dataset
+import torch
+from torch.utils.tensorboard import SummaryWriter
+writer = SummaryWriter()
 
 class WorkloadDataset(Dataset) :
     def __init__(self, data_path):
@@ -21,7 +24,8 @@ class WorkloadDataset(Dataset) :
             data = torch.from_numpy(data.values).float()
             self.dataset.append(data)
         self.dataset = torch.stack(self.dataset)
-        self.dataset = torch.permute(self.dataset, [1,0,2]) # (time, node, feature)
+        self.dataset = self.dataset.permute(1,0,2) # (time, node, feature)
+        # self.dataset = torch.permute(self.dataset, [1,0,2]) # (time, node, feature) torch 1.9.1
 
     def __getitem__(self,index):
         # node_oriented = torch.permute(1,0,2) # (node,time,feature)
@@ -47,7 +51,8 @@ class SlidingWindowDataset(Dataset) :
             list_host_wl_data.append(host_wl_data)
 
         list_host_wl_data = torch.stack(list_host_wl_data)
-        list_host_wl_data = torch.permute(list_host_wl_data, [1,0,2]) # (time, node, feature)
+        list_host_wl_data = list_host_wl_data.permute(1,0,2) # (time, node, feature)
+        # list_host_wl_data = torch.permute(list_host_wl_data, [1,0,2]) # (time, node, feature) torch 1.9.1
 
         self.dataset = [] 
 
@@ -198,6 +203,7 @@ class Seq2Seq(nn.Module):
         
         return torch.cat(outputs, dim=1)
 
+
 # %% 
 # train, test dataset
 # %%
@@ -206,13 +212,13 @@ num_host = 66
 num_feature = 4
 
 args = easydict.EasyDict({
-    "batch_size": 200, ## 배치 사이즈 설정
+    "batch_size": 1000, ## 배치 사이즈 설정
     "device": torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'), ## GPU 사용 여부 설정
     "input_size": num_host * num_feature, ## 입력 차원 설정
-    "hidden_size": 1000, ## Hidden 차원 설정
+    "hidden_size": 2000, ## Hidden 차원 설정
     "output_size": num_host * num_feature, ## 출력 차원 설정
     "num_layers": 1,     ## LSTM layer 갯수 설정
-    "learning_rate" : 0.005, ## learning rate 설정
+    "learning_rate" : 0.01, ## learning rate 설정
     "max_iter" : 1000, ## 총 반복 횟수 설정
 })
 
@@ -234,11 +240,17 @@ test_loader = DataLoader(
 # training
 from tqdm import tqdm
 model = Seq2Seq(args)
+model = model.to(args.device)
 # optimizer 설정
 optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
 epochs = tqdm(range(args.max_iter//len(train_loader)+1))
 
+writer = SummaryWriter(log_dir=f'./runs/my-lstm-AE-ex2-b{args.batch_size}-h{args.hidden_size}', comment="데이터셋 가상 anomaly 제거")
+
+
 count = 0
+running_loss  = 0
+
 for epoch in epochs:
     model.train()
     optimizer.zero_grad()
@@ -262,9 +274,19 @@ for epoch in epochs:
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+
+        running_loss += loss.item()
+        if i % 100 == 99:
+            writer.add_scalar('training_loss',
+                            running_loss/ 100,
+                            epoch * len(train_loader) + i )
+
+
         train_iterator.set_postfix({
             "train_loss": float(loss),
         })
+
+
  
     model.eval()
     eval_loss = 0
@@ -293,7 +315,9 @@ for epoch in epochs:
     eval_loss = eval_loss / len(test_loader)
     print("Evaluation Score : [{}]".format(eval_loss))
 
+writer.close()
 
-# %%
+del train_dataset
+del test_dataset
+torch.cuda.emtpy_cache()
 
-# %%
