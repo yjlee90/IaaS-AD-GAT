@@ -1,9 +1,11 @@
 # %%
+import enum
 import numpy as np
 import pandas as pd
 import pickle
 import os
 import torch
+from torch._C import dtype
 import torch.nn as nn
 from torch.utils import data
 from torch.utils.data import DataLoader, Dataset, SubsetRandomSampler, dataloader, dataset
@@ -84,18 +86,32 @@ class GCNEncoder(nn.Module) :
         )
 
         self.gat2 = GATConv(
-            in_channels=8*8,
-            out_channels=self.n_features,
-            heads=8,
+            in_channels = 8*8,
+            out_channels= self.n_features,
+            heads=1,
             dropout=0.6
         )
 
+    # train_iterator = tqdm(enumerate(train_loader), total=len(train_loader), desc="training")
     def forward(self, x, edge_index) :
-        x = F.dropout(x, p=0.6, training=self.training)
-        x = F.elu(self.gat1(x, edge_index))
-        x = F.dropout(x, p=0.6, training=self.training)
-        x = self.gat2(x, edge_index)
-        return F.log_softmax(x, dim=-1)
+        batch_size, sequence_length, n_node, n_feature = x.size()
+        print(f'GCN input x shape :{x.shape}')
+        hidden = torch.empty(batch_size-sequence_length, sequence_length, n_node, n_feature)
+        for batch_i in tqdm(range(batch_size - sequence_length)):
+            temp_hidden = torch.empty(sequence_length,n_node,n_feature)
+
+            for t in range(sequence_length) :
+                y = x[batch_i][t]
+                y = F.dropout(y, p=0.6, training=self.training)
+                y = F.elu(self.gat1(y, edge_index))
+                y = F.dropout(y, p=0.6, training=self.training)
+                y = self.gat2(y, edge_index)
+                result = F.log_softmax(y, dim=-1)
+                temp_hidden[t] = result
+
+            hidden[batch_i] = temp_hidden
+
+        return hidden # batch_size - seq_leng, seq_lenght, n_node, n_feature
 
 
 import easydict
@@ -111,6 +127,7 @@ args = easydict.EasyDict({
     "num_layers": 1,     ## LSTM layer 갯수 설정
     "learning_rate" : 0.01, ## learning rate 설정
     "max_iter" : 1000, ## 총 반복 횟수 설정
+    "n_features" : 4
 })
 workload_dataset = SlidingWindowDataset('./data/processed/', 50)
 for idx, temp_data in enumerate(workload_dataset) :
@@ -131,12 +148,14 @@ test_loader = DataLoader(
                     batch_size = args.batch_size,
                 )
 
+for idx, train_data in enumerate(train_loader) :
+    print(idx)
+    print(train_data.shape)
+
 #%%
 
 import random
 def gen_random_edge_pair(nodes, edges, seed):
-
-
     random.seed(seed)
     node_list = range(nodes)
 
@@ -154,7 +173,7 @@ def gen_random_edge_pair(nodes, edges, seed):
     src_index = torch.Tensor(src_index)
     trg_index = torch.Tensor(trg_index)
     print(src_index.shape)
-    edge_index = torch.stack([src_index, trg_index], dim=0)
+    edge_index = torch.stack([src_index, trg_index], dim=0).type(torch.LongTensor)
 
     return edge_index 
 
@@ -162,18 +181,24 @@ rand_edge_index = gen_random_edge_pair(66,3000,32)
 rand_edge_index.shape
 
 # %%
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = (dataset.num_features, dataset.num_classes).to(device)
-data = data.to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.005, weight_decay=5e-4)
+from tqdm import tqdm
+model = GCNEncoder(args).to(args.device)
+optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
+epochs = tqdm(range(args.max_iter//len(train_loader)+1))
+
+for epoch in epochs:
+    model.train()
+    optimizer.zero_grad()
+    train_iterator = tqdm(enumerate(train_loader), total=len(train_loader), desc="training")
+    for i, batch_data in train_iterator:
+        past_data = batch_data.float().to(args.device)
+        future_data = batch_data.float().to(args.device)
+        out = model(past_data, rand_edge_index)
 
 
 
     
 # %%
-
-
-
 
 class Encoder(nn.Module):
     

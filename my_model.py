@@ -1,127 +1,40 @@
 # %%
+import torch
 import torch.nn as nn
+from torch.utils.data import DataLoader
 import easydict
-from my_autoencoder_graph import *
+from tqdm import tqdm
+# from my_autoencoder_graph import *
 # from my_modules import *
 from my_dataset import SlidingWindowDataset
+
 # %%
 # model definition
-class GraphAttentionLayer(nn.Module):
-    """Single Graph Feature/Spatial Attention Layer
-    :param n_features: Number of input features/nodes
-    :param window_size: length of the input sequence
-    :param dropout: percentage of nodes to dropout
-    :param alpha: negative slope used in the leaky rely activation function
-    :param embed_dim: embedding dimension (output dimension of linear transformation)
-    :param use_gatv2: whether to use the modified attention mechanism of GATv2 instead of standard GAT
-    :param use_bias: whether to include a bias term in the attention layer
-    """
+import torch.nn.functional as F
+from torch_geometric.nn import GATConv
 
-    def __init__(self, n_features, window_size, dropout, alpha, adjacency, embed_dim=None, use_gatv2=True, use_bias=True):
-        super(GraphAttentionLayer, self).__init__()
-        self.n_features = n_features
-        self.window_size = window_size
-        self.dropout = dropout
-        self.embed_dim = embed_dim if embed_dim is not None else window_size
-        self.use_gatv2 = use_gatv2
-        self.num_nodes = n_features
-        self.use_bias = use_bias
-        self.adjacency = adjacency
+class MyGATNet(nn.Module) :
+    def __init__(self, args):
+        super(MyGATNet, self).__init__()
+        self.in_channels = args.in_channels
+        self.out_channels = args.out_channels
 
-        # Because linear transformation is done after concatenation in GATv2
-        if self.use_gatv2:
-            self.embed_dim *= 2
-            lin_input_dim = 2 * window_size
-            a_input_dim = self.embed_dim
-        else:
-            lin_input_dim = window_size
-            a_input_dim = 2 * self.embed_dim
+        self.conv1 = GATConv(self.in_channels, 8, heads=8, dropout=0.6)
+        # On the Pubmed dataset, use heads=8 in conv2.
+        self.conv2 = GATConv(
+            8 * 8, self.out_channels, heads=2, concat=False, dropout=0.6)
 
-        self.lin = nn.Linear(lin_input_dim, self.embed_dim)
-        self.a = nn.Parameter(torch.empty((a_input_dim, 1)))
-        nn.init.xavier_uniform_(self.a.data, gain=1.414)
+    def forward(self, x, edge_index) :
+        for t in range(len(x)) :
 
-        if self.use_bias:
-            self.bias = nn.Parameter(torch.empty(n_features, n_features))
 
-        self.leakyrelu = nn.LeakyReLU(alpha)
-        self.sigmoid = nn.Sigmoid()
 
-    def forward(self, x):
-        # x shape (b, n, k): b - batch size, n - window size, k - number of features
-        # For feature attention we represent a node as the values of a particular feature across all timestamps
 
-        x = x.permute(0, 2, 1)
-
-        # 'Dynamic' GAT attention
-        # Proposed by Brody et. al., 2021 (https://arxiv.org/pdf/2105.14491.pdf)
-        # Linear transformation applied after concatenation and attention layer applied after leakyrelu
-        if self.use_gatv2:
-            a_input = self._make_attention_input(x)                 # (b, k, k, 2*window_size)
-            a_input = self.leakyrelu(self.lin(a_input))             # (b, k, k, embed_dim)
-            e = torch.matmul(a_input, self.a).squeeze(3)            # (b, k, k, 1)
-
-        # Original GAT attention
-        else:
-            Wx = self.lin(x)                                                  # (b, k, k, embed_dim)
-            a_input = self._make_attention_input(Wx)                          # (b, k, k, 2*embed_dim)
-            e = self.leakyrelu(torch.matmul(a_input, self.a)).squeeze(3)      # (b, k, k, 1)
-
-        if self.use_bias:
-            e += self.bias
-
-        # Attention weights
-        attention = torch.softmax(e, dim=2)
-        attention = torch.dropout(attention, self.dropout, train=self.training)
-
-        # Computing new node features using the attention
-        h = self.sigmoid(torch.matmul(attention, x))
-
-        return h.permute(0, 2, 1)
-
-    def _make_attention_input(self, v):
-        """Preparing the feature attention mechanism.
-        Creating matrix with all possible combinations of concatenations of node.
-        Each node consists of all values of that node within the window
-            v1 || v1,
-            ...
-            v1 || vK,
-            v2 || v1,
-            ...
-            v2 || vK,
-            ...
-            ...
-            vK || v1,
-            ...
-            vK || vK,
-        """
-
-        K = self.num_nodes
-        blocks_repeating = v.repeat_interleave(K, dim=1)  # Left-side of the matrix
-        blocks_alternating = v.repeat(1, K, 1)  # Right-side of the matrix
-        combined = torch.cat((blocks_repeating, blocks_alternating), dim=2)  # (b, K*K, 2*window_size)
-
-        if self.use_gatv2:
-            return combined.view(v.size(0), K, K, 2 * self.window_size)
-        else:
-            return combined.view(v.size(0), K, K, 2 * self.embed_dim)
-
-class MyModel(nn.Module) :
-    def __init__(self, n_features,window_size,dropout,alpha):
-        super(MyModel, self).__init__()
-
-        self.gat_layer = GraphAttentionLayer(
-            n_features = n_features,
-            window_size = window_size,
-            dropout = dropout,
-            alpha = alpha
-        )
-
-    def forward(self, x) :
-        h = self.conv(x)
-        result = self.gat_layer(h)
-
-        return result
+        x = F.dropout(x, p=0.6, training=self.training)
+        x = F.elu(self.conv1(x, edge_index))
+        x = F.dropout(x, p=0.6, training=self.training)
+        x = self.conv2(x, edge_index)
+        return F.log_softmax(x, dim=-1)
 
 # %%
 # training phase
@@ -140,6 +53,10 @@ args = easydict.EasyDict({
     "learning_rate" : 0.01, ## learning rate 설정
     "max_iter" : 1000, ## 총 반복 횟수 설정,
     "window_size" : 50,
+    "dropout" : 0.1,
+    "alpha": 0.2,
+    "n_features": num_feature,
+    "num_host": num_host
 })
 
 # %%
@@ -163,3 +80,28 @@ test_loader = DataLoader(
  # %%
 model = MyModel(args)
 model = model.to(args.device)
+
+optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
+epochs = tqdm(range(args.max_iter//len(train_loader)+1))
+
+# %%
+for epoch in epochs:
+    model.train()
+    optimizer.zero_grad()
+    train_iterator = tqdm(enumerate(train_loader), total=len(train_loader), desc="training")
+
+    for i, batch_data in train_iterator:
+        past_data = batch_data
+        future_data = batch_data
+        batch_size = past_data.size(0)
+        example_size = past_data.size(1)
+        past_data = past_data.view(batch_size, example_size, -1).float().to(args.device)
+        future_data = future_data.view(batch_size, example_size, -1).float().to(args.device)
+
+
+        model(past_data)
+
+
+# %%
+
+# %%
