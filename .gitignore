@@ -1,0 +1,6 @@
+*.pkl
+__pycache__/
+references
+Cora/
+.vscode/
+*.ftr

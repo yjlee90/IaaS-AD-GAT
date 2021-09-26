@@ -1,0 +1,150 @@
+# %%
+import torch
+import torch.nn as nn
+
+class GraphAttentionLayer(nn.Module):
+    """Single Graph Feature/Spatial Attention Layer
+    :param n_features: Number of input features/nodes
+    :param window_size: length of the input sequence
+    :param dropout: percentage of nodes to dropout
+    :param alpha: negative slope used in the leaky rely activation function
+    :param embed_dim: embedding dimension (output dimension of linear transformation)
+    :param use_gatv2: whether to use the modified attention mechanism of GATv2 instead of standard GAT
+    :param use_bias: whether to include a bias term in the attention layer
+    """
+
+    def __init__(self, n_features, window_size, dropout, alpha, adjacency, embed_dim=None, use_gatv2=True, use_bias=True):
+        super(GraphAttentionLayer, self).__init__()
+        self.n_features = n_features
+        self.window_size = window_size
+        self.dropout = dropout
+        self.embed_dim = embed_dim if embed_dim is not None else window_size
+        self.use_gatv2 = use_gatv2
+        self.num_nodes = n_features
+        self.use_bias = use_bias
+        self.adjacency = adjacency
+
+        # Because linear transformation is done after concatenation in GATv2
+        if self.use_gatv2:
+            self.embed_dim *= 2
+            lin_input_dim = 2 * window_size
+            a_input_dim = self.embed_dim
+        else:
+            lin_input_dim = window_size
+            a_input_dim = 2 * self.embed_dim
+
+        self.lin = nn.Linear(lin_input_dim, self.embed_dim)
+        self.a = nn.Parameter(torch.empty((a_input_dim, 1)))
+        nn.init.xavier_uniform_(self.a.data, gain=1.414)
+
+        if self.use_bias:
+            self.bias = nn.Parameter(torch.empty(n_features, n_features))
+
+        self.leakyrelu = nn.LeakyReLU(alpha)
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+        # x shape (b, n, k): b - batch size, n - window size, k - number of features
+        # For feature attention we represent a node as the values of a particular feature across all timestamps
+
+        x = x.permute(0, 2, 1)
+
+        # 'Dynamic' GAT attention
+        # Proposed by Brody et. al., 2021 (https://arxiv.org/pdf/2105.14491.pdf)
+        # Linear transformation applied after concatenation and attention layer applied after leakyrelu
+        if self.use_gatv2:
+            a_input = self._make_attention_input(x)                 # (b, k, k, 2*window_size)
+            a_input = self.leakyrelu(self.lin(a_input))             # (b, k, k, embed_dim)
+            e = torch.matmul(a_input, self.a).squeeze(3)            # (b, k, k, 1)
+
+        # Original GAT attention
+        else:
+            Wx = self.lin(x)                                                  # (b, k, k, embed_dim)
+            a_input = self._make_attention_input(Wx)                          # (b, k, k, 2*embed_dim)
+            e = self.leakyrelu(torch.matmul(a_input, self.a)).squeeze(3)      # (b, k, k, 1)
+
+        if self.use_bias:
+            e += self.bias
+
+        # Attention weights
+        attention = torch.softmax(e, dim=2)
+        attention = torch.dropout(attention, self.dropout, train=self.training)
+
+        # Computing new node features using the attention
+        h = self.sigmoid(torch.matmul(attention, x))
+
+        return h.permute(0, 2, 1)
+
+    def _make_attention_input(self, v):
+        """Preparing the feature attention mechanism.
+        Creating matrix with all possible combinations of concatenations of node.
+        Each node consists of all values of that node within the window
+            v1 || v1,
+            ...
+            v1 || vK,
+            v2 || v1,
+            ...
+            v2 || vK,
+            ...
+            ...
+            vK || v1,
+            ...
+            vK || vK,
+        """
+
+        K = self.num_nodes
+        blocks_repeating = v.repeat_interleave(K, dim=1)  # Left-side of the matrix
+        blocks_alternating = v.repeat(1, K, 1)  # Right-side of the matrix
+        combined = torch.cat((blocks_repeating, blocks_alternating), dim=2)  # (b, K*K, 2*window_size)
+
+        if self.use_gatv2:
+            return combined.view(v.size(0), K, K, 2 * self.window_size)
+        else:
+            return combined.view(v.size(0), K, K, 2 * self.embed_dim)
+
+class ConvLayer(nn.Module):
+    """1-D Convolution layer to extract high-level features of each time-series input
+    :param n_features: Number of input features/nodes
+    :param window_size: length of the input sequence
+    :param kernel_size: size of kernel to use in the convolution operation
+    """
+
+    def __init__(self, n_features, kernel_size=7):
+        super(ConvLayer, self).__init__()
+        self.padding = nn.ConstantPad1d((kernel_size - 1) // 2, 0.0)
+        self.conv = nn.Conv1d(in_channels=n_features, out_channels=n_features, kernel_size=7)
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        x = x.permute(0, 2, 1)
+        x = self.padding(x)
+        x = self.relu(self.conv(x))
+        return x.permute(0, 2, 1)  # Permute back
+
+
+
+
+# class ReconstructionModel(nn.Module):
+#     """Reconstruction Model
+#     :param window_size: length of the input sequence
+#     :param in_dim: number of input features
+#     :param n_layers: number of layers in RNN
+#     :param hid_dim: hidden size of the RNN
+#     :param in_dim: number of output features
+#     :param dropout: dropout rate
+#     """
+
+#     def __init__(self, window_size, in_dim, hid_dim, out_dim, n_layers, dropout):
+#         super(ReconstructionModel, self).__init__()
+#         self.window_size = window_size
+#         self.decoder = RNNDecoder(in_dim, hid_dim, n_layers, dropout)
+#         self.fc = nn.Linear(hid_dim, out_dim)
+
+#     def forward(self, x):
+#         # x will be last hidden state of the GRU layer
+#         h_end = x
+#         h_end_rep = h_end.repeat_interleave(self.window_size, dim=1).view(x.size(0), self.window_size, -1)
+
+#         decoder_out = self.decoder(h_end_rep)
+#         out = self.fc(decoder_out)
+#         return out
