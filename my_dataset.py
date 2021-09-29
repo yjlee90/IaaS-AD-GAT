@@ -2,6 +2,8 @@ import pickle
 import os
 import torch
 from torch.utils.data import  Dataset
+import logging
+logger = logging.getLogger()
 
 class WorkloadDataset(Dataset) :
     def __init__(self, data_path):
@@ -17,6 +19,7 @@ class WorkloadDataset(Dataset) :
             self.dataset.append(data)
         self.dataset = torch.stack(self.dataset)
         self.dataset = self.dataset.permute(1,0,2) # (time, node, feature)
+        logger.info(self.dataset.shape)
         # self.dataset = torch.permute(self.dataset, [1,0,2]) # (time, node, feature) torch 1.9.1
 
     def __getitem__(self,index):
@@ -66,6 +69,29 @@ class SlidingWindowDataset(Dataset) :
         print(f'workload_dataset             len : {len(self.dataset)}')
         print(f'workload_dataset each data shape : {self.dataset.data[0].shape}')
         
+import random
+def gen_random_edge_pair(nodes, edges, seed):
+    random.seed(seed)
+    node_list = range(nodes)
+
+    src_index = [] 
+    trg_index = []
+
+    while len(src_index) < edges :
+        src = random.choice(node_list)
+        trg = random.choice(node_list)
+
+        if src != trg :
+            src_index.append(int(random.choice(node_list)))
+            trg_index.append(int(random.choice(node_list)))
+    
+    src_index = torch.Tensor(src_index)
+    trg_index = torch.Tensor(trg_index)
+    logger.info(src_index.shape)
+    edge_index = torch.stack([src_index, trg_index], dim=0).type(torch.LongTensor)
+
+    return edge_index 
+
 
 
 if __name__ == "__main__":
