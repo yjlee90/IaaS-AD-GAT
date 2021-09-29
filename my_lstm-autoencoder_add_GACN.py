@@ -95,11 +95,10 @@ class GCNEncoder(nn.Module) :
     # train_iterator = tqdm(enumerate(train_loader), total=len(train_loader), desc="training")
     def forward(self, x, edge_index) :
         batch_size, sequence_length, n_node, n_feature = x.size()
-        print(f'GCN input x shape :{x.shape}')
         hidden = torch.empty(batch_size-sequence_length, sequence_length, n_node, n_feature)
-        for batch_i in tqdm(range(batch_size - sequence_length)):
+        for batch_i in range(batch_size - sequence_length):
             temp_hidden = torch.empty(sequence_length,n_node,n_feature)
-
+            torch.cuda.empty_cache()
             for t in range(sequence_length) :
                 y = x[batch_i][t]
                 y = F.dropout(y, p=0.6, training=self.training)
@@ -108,28 +107,29 @@ class GCNEncoder(nn.Module) :
                 y = self.gat2(y, edge_index)
                 result = F.log_softmax(y, dim=-1)
                 temp_hidden[t] = result
-
+                del y
+                del result
             hidden[batch_i] = temp_hidden
-
         return hidden # batch_size - seq_leng, seq_lenght, n_node, n_feature
-
+# %%
 
 import easydict
 num_host = 66
 num_feature = 4
 
 args = easydict.EasyDict({
-    "batch_size": 1000, ## 배치 사이즈 설정
+    "batch_size": 100, ## 배치 사이즈 설정
     "device": torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'), ## GPU 사용 여부 설정
     "input_size": num_host * num_feature, ## 입력 차원 설정
     "hidden_size": 100, ## Hidden 차원 설정
     "output_size": num_host * num_feature, ## 출력 차원 설정
     "num_layers": 1,     ## LSTM layer 갯수 설정
     "learning_rate" : 0.01, ## learning rate 설정
-    "max_iter" : 1000, ## 총 반복 횟수 설정
-    "n_features" : 4
+    "max_iter" : 100, ## 총 반복 횟수 설정
+    "n_features" : 4,
+    "window_size" : 10
 })
-workload_dataset = SlidingWindowDataset('./data/processed/', 50)
+workload_dataset = SlidingWindowDataset('./data/processed/', args.window_size)
 for idx, temp_data in enumerate(workload_dataset) :
     if torch.isnan(temp_data).any() :
         print(idx)
@@ -147,13 +147,7 @@ test_loader = DataLoader(
                     dataset = test_dataset,
                     batch_size = args.batch_size,
                 )
-
-for idx, train_data in enumerate(train_loader) :
-    print(idx)
-    print(train_data.shape)
-
 #%%
-
 import random
 def gen_random_edge_pair(nodes, edges, seed):
     random.seed(seed)
@@ -178,11 +172,13 @@ def gen_random_edge_pair(nodes, edges, seed):
     return edge_index 
 
 rand_edge_index = gen_random_edge_pair(66,3000,32)
+rand_edge_index = rand_edge_index.to(args.device)
 rand_edge_index.shape
 
 # %%
 from tqdm import tqdm
-model = GCNEncoder(args).to(args.device)
+model = GCNEncoder(args)
+model = model.to(args.device)
 optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
 epochs = tqdm(range(args.max_iter//len(train_loader)+1))
 
@@ -229,12 +225,10 @@ class Decoder(nn.Module):
    
         
     def forward(self, x, hidden):
-        # x: tensor of shape (batch_size, seq_length, hidden_size)
+        # x: tensor of shape (batch_size, seq_length, hidden_size
         output, (hidden, cell) = self.lstm(x, hidden)
         prediction = self.fc(output)
         return prediction, (hidden, cell)
-
-
 
 
 

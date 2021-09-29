@@ -63,3 +63,4 @@ host_sample_data.iloc[:,:].plot(kind='line',y='mean_cpu_usage')
 plt.show()
 
     
+# %%
