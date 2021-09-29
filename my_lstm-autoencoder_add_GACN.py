@@ -63,7 +63,6 @@ class SlidingWindowDataset(Dataset) :
             self.dataset.append(x)
         self.dataset = torch.stack(self.dataset)
 
-
     def __getitem__(self, index):
         return self.dataset[index]
 
@@ -73,9 +72,9 @@ class SlidingWindowDataset(Dataset) :
 # %%
 from torch_geometric.nn import GATConv
 import torch.nn.functional as F
-class GCNEncoder(nn.Module) :
+class GATNetwork(nn.Module) :
     def __init__(self, args) :
-        super(GCNEncoder,self).__init__()
+        super(GATNetwork,self).__init__()
         self.n_features = args.n_features
 
         self.gat1 = GATConv(
@@ -96,23 +95,23 @@ class GCNEncoder(nn.Module) :
     def forward(self, x, edge_index) :
         batch_size, sequence_length, n_node, n_feature = x.size()
         hidden = torch.empty(batch_size-sequence_length, sequence_length, n_node, n_feature)
+        print(batch_size, sequence_length, n_node, n_feature)
         for batch_i in range(batch_size - sequence_length):
             temp_hidden = torch.empty(sequence_length,n_node,n_feature)
-            torch.cuda.empty_cache()
+            # torch.cuda.empty_cache()
             for t in range(sequence_length) :
-                y = x[batch_i][t]
-                y = F.dropout(y, p=0.6, training=self.training)
-                y = F.elu(self.gat1(y, edge_index))
-                y = F.dropout(y, p=0.6, training=self.training)
-                y = self.gat2(y, edge_index)
-                result = F.log_softmax(y, dim=-1)
-                temp_hidden[t] = result
-                del y
-                del result
-            hidden[batch_i] = temp_hidden
-        return hidden # batch_size - seq_leng, seq_lenght, n_node, n_feature
+            #     y = x[batch_i][t]
+            #     y = F.dropout(y, p=0.6, training=self.training)
+            #     y = F.elu(self.gat1(y, edge_index))
+            #     y = F.dropout(y, p=0.6, training=self.training)
+            #     y = self.gat2(y, edge_index)
+            #     result = F.log_softmax(y, dim=-1)
+            #     temp_hidden[t] = result
+            #     del y
+            #     del result
+            # hidden[batch_i] = temp_hidden
+        # return hidden # batch_size - seq_leng, seq_lenght, n_node, n_feature
 # %%
-
 import easydict
 num_host = 66
 num_feature = 4
@@ -177,25 +176,23 @@ rand_edge_index.shape
 
 # %%
 from tqdm import tqdm
-model = GCNEncoder(args)
+model = GATNetwork(args)
 model = model.to(args.device)
 optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
 epochs = tqdm(range(args.max_iter//len(train_loader)+1))
 
 for epoch in epochs:
+
     model.train()
     optimizer.zero_grad()
     train_iterator = tqdm(enumerate(train_loader), total=len(train_loader), desc="training")
+
     for i, batch_data in train_iterator:
         past_data = batch_data.float().to(args.device)
         future_data = batch_data.float().to(args.device)
         out = model(past_data, rand_edge_index)
 
-
-
-    
 # %%
-
 class Encoder(nn.Module):
     
     def __init__(self, input_size=4096, hidden_size=1024, num_layers=2):
@@ -223,15 +220,11 @@ class Decoder(nn.Module):
 
         self.fc = nn.Linear(hidden_size, output_size)
    
-        
     def forward(self, x, hidden):
         # x: tensor of shape (batch_size, seq_length, hidden_size
         output, (hidden, cell) = self.lstm(x, hidden)
         prediction = self.fc(output)
         return prediction, (hidden, cell)
-
-
-
 
 class Seq2Seq(nn.Module):
     def __init__(self, args):
@@ -284,13 +277,17 @@ class Seq2Seq(nn.Module):
         reconstruct_output = []
         temp_input = torch.zeros((batch_size,1,img_size), dtype=torch.float).to(src.device)
         hidden = encoder_hidden
+
         for t in range(sequence_length):
+
             temp_input, hidden = self.reconstruct_decoder(temp_input, hidden)
             reconstruct_output.append(temp_input)
+
         reconstruct_output = torch.cat(reconstruct_output, dim=1)
         reconstruct_loss = self.criterion(reconstruct_output, src[:, inv_idx, :])
             
         return reconstruct_loss, predict_loss
+
     
     def generate(self, src):
         batch_size, sequence_length, img_size = src.size()

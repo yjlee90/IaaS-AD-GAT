@@ -168,13 +168,6 @@ data = data.to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.005, weight_decay=5e-4)
 
 
-
-    
-# %%
-
-
-
-
 class Encoder(nn.Module):
     
     def __init__(self, input_size=4096, hidden_size=1024, num_layers=2):
