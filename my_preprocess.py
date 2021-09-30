@@ -119,8 +119,10 @@ path = './data/real/raw/'
 file_list = os.listdir(path)
 file_list_py = [file for file in file_list if file.endswith('.csv')]
 
-print(file_list_py)
-
+for file in file_list_py :
+    hostname = file.rstrip('.csv')
+    print(hostname)
+# %%
 cols = [
     'system_load_norm_1m',
     'system_load_norm_5m',

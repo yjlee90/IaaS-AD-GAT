@@ -112,7 +112,7 @@ args = easydict.EasyDict({
     "learning_rate" : 0.01, ## learning rate 설정
     "max_iter" : 1000, ## 총 반복 횟수 설정
 })
-workload_dataset = SlidingWindowDataset('./data/processed/', 50)
+workload_dataset = SlidingWindowDataset('./data/mock/processed/', 50)
 for idx, temp_data in enumerate(workload_dataset) :
     if torch.isnan(temp_data).any() :
         print(idx)
@@ -166,7 +166,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = (dataset.num_features, dataset.num_classes).to(device)
 data = data.to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.005, weight_decay=5e-4)
-
+# %%
 
 class Encoder(nn.Module):
     
@@ -179,7 +179,9 @@ class Encoder(nn.Module):
 
     def forward(self, x):
         # x: tensor of shape (batch_size, seq_length, hidden_size)
+        print(f'Encoder input shape {x.shape}')
         outputs, (hidden, cell) = self.lstm(x)
+        print(f'Encoder output hidden shape {hidden.shape}')
 
         return (hidden, cell)
 
@@ -198,14 +200,22 @@ class Decoder(nn.Module):
         
     def forward(self, x, hidden):
         # x: tensor of shape (batch_size, seq_length, hidden_size)
+        print(f'Decoder input x shape {x.shape}')
+        print(f'Decoder input hidden shape {hidden[0].shape}')
+
         output, (hidden, cell) = self.lstm(x, hidden)
+
+        print(f'Decoder output hidden shape {hidden.shape}')
+        print(f'Decoder output output shape {output.shape}')
         prediction = self.fc(output)
+
+        print(f'Decoder output prediction shape {prediction.shape}')
         return prediction, (hidden, cell)
 
 
 
 
-
+#%%
 
 class Seq2Seq(nn.Module):
     def __init__(self, args):
@@ -304,7 +314,7 @@ num_host = 66
 num_feature = 4
 
 args = easydict.EasyDict({
-    "batch_size": 1000, ## 배치 사이즈 설정
+    "batch_size": 500, ## 배치 사이즈 설정
     "device": torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'), ## GPU 사용 여부 설정
     "input_size": num_host * num_feature, ## 입력 차원 설정
     "hidden_size": 100, ## Hidden 차원 설정
@@ -313,7 +323,7 @@ args = easydict.EasyDict({
     "learning_rate" : 0.01, ## learning rate 설정
     "max_iter" : 1000, ## 총 반복 횟수 설정
 })
-workload_dataset = SlidingWindowDataset('./data/processed/', 50)
+workload_dataset = SlidingWindowDataset('./data/mock/processed/', 50)
 for idx, temp_data in enumerate(workload_dataset) :
     if torch.isnan(temp_data).any() :
         print(idx)
@@ -416,3 +426,5 @@ writer.close()
 del train_dataset
 del test_dataset
 torch.cuda.emtpy_cache()
+
+# %%

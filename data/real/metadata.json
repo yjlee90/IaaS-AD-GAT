@@ -1,0 +1,607 @@
+{
+    "vms": [{
+            "name": "test21",
+            "hypervisorHostName": "contrabass01"
+        },
+        {
+            "name": "jenkins-slave2",
+            "hypervisorHostName": "contrabass01"
+        },
+        {
+            "name": "platform-ubuntu18.04-secure",
+            "hypervisorHostName": "contrabass01"
+        },
+        {
+            "name": "platform-win10",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "test-win",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "amphora-05656f5d-ae25-4f55-91aa-4d0b2bff3fdc",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "jenkins-slave1",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "jenkins-master",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "test_jenkins_slave",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "test_jenkins_master",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "test_haproxy",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "secure-script-test",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "dns-test-2",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "dns-test-1",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "jamesbond",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "te-sv5y-2sdwvqlwmvrl-ne7ojj4lqfb5-server-scvozf4nqrcr",
+            "hypervisorHostName": "contrabass03",
+        },
+        {
+            "name": "test_vm_gt2",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "te-vmxn-7o36ysqqsord-meworke4oyqj-server-fxyj4r5ye7n4",
+            "hypervisorHostName": "contrabass03",
+        },
+        {
+            "name": "cb_ent_lxd_dev01",
+            "hypervisorHostName": "contrabass03",
+        },
+        {
+            "name": "test_gt_vm1",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "bigdata-elastic-data-1",
+            "hypervisorHostName": "contrabass03",
+        },
+        {
+            "name": "bigdata-elastic-data-2",
+            "hypervisorHostName": "contrabass03",
+        },
+        {
+            "name": "bigdata-elastic-data-3",
+            "hypervisorHostName": "contrabass03",
+        },
+        {
+            "name": "bigdata-elastic-master-1",
+        },
+        {
+            "name": "cb_ent_secret01",
+            "hypervisorHostName": "contrabass03",
+        },
+        {
+            "name": "wetax-pipeline-app",
+            "hypervisorHostName": "contrabass03",
+        },
+        {
+            "name": "wetax-pipeline-api",
+            "hypervisorHostName": "contrabass03",
+        },
+        {
+            "name": "wetax-redis",
+            "hypervisorHostName": "contrabass03",
+        },
+        {
+            "name": "wetax-mariaDB3",
+            "hypervisorHostName": "contrabass03",
+        },
+        {
+            "name": "wetax-mariaDB2",
+            "hypervisorHostName": "contrabass03",
+        },
+        {
+            "name": "amphora-72f0514a-eb68-4c38-8a81-d6e59e7ff95c",
+            "hypervisorHostName": "contrabass03",
+        },
+        {
+            "name": "wetax-nexus",
+            "hypervisorHostName": "contrabass03",
+        },
+        {
+            "name": "wetax-vault",
+            "hypervisorHostName": "contrabass03",
+        },
+        {
+            "name": "wetax-jenkins-master",
+            "hypervisorHostName": "contrabass03",
+        },
+        {
+            "name": "wetax-sonarqube",
+            "hypervisorHostName": "contrabass03",
+        },
+        {
+            "name": "wetax-mariaDB",
+            "hypervisorHostName": "contrabass03",
+        },
+        {
+            "name": "dataops-ojt-kafka-3",
+            "hypervisorHostName": "contrabass03",
+        },
+        {
+            "name": "dataops-ojt-kafka-2",
+            "hypervisorHostName": "contrabass03",
+        },
+        {
+            "name": "dataops-ojt-kafka-1",
+            "hypervisorHostName": "contrabass03",
+        },
+        {
+            "name": "wetax-scmManager",
+            "hypervisorHostName": "contrabass03",
+        },
+        {
+            "name": "wetax-proxy-centos7",
+            "hypervisorHostName": "contrabass03",
+        },
+        {
+            "name": "binary-install-test-01",
+            "hypervisorHostName": "contrabass03",
+        },
+        {
+            "name": "amphora-64350b73-de98-4e2b-8b1a-a08307887e5c",
+            "hypervisorHostName": "contrabass03",
+        },
+        {
+            "name": "test-load-1",
+            "hypervisorHostName": "contrabass03",
+        },
+        {
+            "name": "test-load-2",
+            "hypervisorHostName": "contrabass03",
+        },
+        {
+            "name": "cb_ent_auth01",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "cb_ent_mq01",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "cb_ent_db01",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "cb_ent_api01",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "cb_ent_app01",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "cb_ent_proxy",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "test",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "demo_project-tomcat",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "dataops-ojt-3",
+            "hypervisorHostName": "contrabass04",
+        },
+        {
+            "name": "dataops-ojt-1",
+            "hypervisorHostName": "contrabass04",
+        },
+        {
+            "name": "dataops-ojt-4",
+            "hypervisorHostName": "contrabass04",
+        },
+        {
+            "name": "dataops-ojt-2",
+            "hypervisorHostName": "contrabass04",
+        },
+        {
+            "name": "dataops-deploy-slave-2",
+            "hypervisorHostName": "contrabass04",
+        },
+        {
+            "name": "dataops-deploy-slave-3",
+            "hypervisorHostName": "contrabass04",
+        },
+        {
+            "name": "dataops-deploy-slave-1",
+            "hypervisorHostName": "contrabass04",
+        },
+        {
+            "name": "dataops-deploy-master",
+            "hypervisorHostName": "contrabass04",
+        },
+        {
+            "name": "bigdata-spark-hdfs-test-2",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "bigdata-spark-hdfs-test-3",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "bigdata-spark-hdfs-test-4",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "bigdata-spark-hdfs-test-1",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "amphora-48696bf1-acdc-488b-a74f-56831053b634",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "amphora-ea480437-4336-49df-a35d-df19dbd61b7c",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "amphora-7e97b9ea-af38-4f41-ba90-17ee9a373d3a",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "symphony-test",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "platform-haproxy-vmware",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "checktestvm",
+            "hypervisorHostName": "contrabass05",
+        },
+        {
+            "name": "platform-haproxy-lb",
+            "hypervisorHostName": "contrabass05",
+        },
+        {
+            "name": "symphony-instance",
+            "hypervisorHostName": "contrabass05",
+        },
+        {
+            "name": "platform-dev-mariadb-1",
+            "hypervisorHostName": "contrabass05",
+        },
+        {
+            "name": "platform-dev-mariadb-3",
+            "hypervisorHostName": "contrabass05",
+        },
+        {
+            "name": "platform-dev-mariadb-2",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "bigdata-spark-test-1",
+            "hypervisorHostName": "contrabass05",
+        },
+        {
+            "name": "cicd-tomcat",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "bigdata-hdfs-spark-3",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "bigdata-hdfs-spark-2",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "bigdata-hdfs-spark-1",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "platform-nexus",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "bigdata-spark-hdfs-4",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "bigdata-spark-hdfs-1",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "bigdata-spark-hdfs-3",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "bigdata-spark-hdfs-2",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "ndfs-server",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "ndfs-vault",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "bigdata-spark-hdfs-deploy",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "platform-broker",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "cicd-node3",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "cicd-node2",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "cicd-master1",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "cicd-node1",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "platform-mkdocs",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "platform-image",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "platform-dns",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "platform-bastion",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "platform-haproxy",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "bigdata-logstash-1",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "bigdata-logstash-2",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "bigdata-kafka-2",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "bigdata-kafka-3",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "bigdata-kafka-1",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "bigdata-elasticsearch-data-3",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "bigdata-elasticsearch-data-1",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "bigdata-elasticsearch-data-2",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "platform-nfs",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "bigdata-elasticsearch-master-1",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "amphora-78d124e0-4a28-4660-b207-4c60bae41658",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "egov-keycloak-2",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "egov-keycloak-1",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "egov-ptlmail",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "cicd-Rancer",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "cicd-NAS",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "platform-ptlmail",
+            "hypervisorHostName": "contrabass01",
+        },
+        {
+            "name": "cicd-Harbor",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "cicd-SCMmanager",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "cicd-SonarQube",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "cicd-JenkinsS-3",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "cicd-JenkinsS-1",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "cicd-JenkinsS-2",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "cicd-JenkinsM",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "cicd-pipelineBroker",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "cicd-pipelineApi",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "cicd-pipelineApp",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "egov-vault_redis",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "egov-ptldb-1",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "amphora-f9c9f32b-e348-462d-8b01-f145485511bd",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "platform-keycloak-2",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "platform-keycloak-1",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "platform-vault-1",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "platform-vault-2",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "platform-consul-3",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "platform-consul-2",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "platform-consul-1",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "amphora-c6fdb92c-3384-4c6c-91be-b13bafbc2f3a",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "egov-rabbitmq",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "platform-ptldb-1",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "egov-captcha",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "platform-etcd0",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "platform-k8s-worker2",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "platform-k8s-worker1",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "platform-k8s-worker0",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "platform-k8s-master0",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "testci",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "amphora-13f51dd9-5617-40f0-9a23-7f35dce140e8",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "teststet",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "test-load-2",
+            "hypervisorHostName": "contrabass02",
+        },
+        {
+            "name": "test-load-1",
+            "hypervisorHostName": "contrabass02",
+        }
+    ]
+} {
+    'hypervisor': {
+        'contrabass01'
+    }
+
+}
