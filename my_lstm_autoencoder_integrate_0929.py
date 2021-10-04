@@ -215,7 +215,10 @@ from tqdm import tqdm
 model = MyModel(args)
 model = model.to(args.device)
 optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
-epochs = tqdm(range(args.max_iter//len(train_loader)+1))
+#epochs = tqdm(range(args.max_iter//len(train_loader)+1))
+epochs = range(args.max_iter//len(train_loader)+1)
+
+
 for epoch in epochs:
 
     logger.info(f'Batch iterator count : {epoch}/{len(epochs)}')

@@ -28,7 +28,10 @@ class WorkloadDataset(Dataset) :
 
     def __len__(self) :
         return len(self.dataset) 
-        
+    def get_info(self):
+        print('=================workload_dataset meta==================')
+        print(f'workload_dataset             len : {len(self.dataset)}')
+        print(f'workload_dataset each data shape : {self.dataset.data[0].shape}')
 class SlidingWindowDataset(Dataset) :
     def __init__(self, data_path, window, target_dim=None, horizon=1):
         self.window = window
